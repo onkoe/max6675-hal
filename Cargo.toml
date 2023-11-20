@@ -1,0 +1,27 @@
+[package]
+name = "max6675-hal"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[dependencies]
+embedded-hal = "0.2.7"
+onlyerror = { version = "0.1.3", default-features = false }
+
+[dev-dependencies]
+approx_eq = "0.1.8"
+embedded-hal = "0.2.7"
+panic-halt = "0.2.0"
+ufmt = "0.2.0"
+ufmt_float = "0.2.0"
+
+[dev-dependencies.arduino-hal]
+git = "https://github.com/rahix/avr-hal"
+rev = "190f2c3cb8d29e10f71119352b912369dc5a1fb7"
+features = ["arduino-mega2560"]
+
+[toolchain]
+channel = "nightly"
+
+[features]
+linux = []
