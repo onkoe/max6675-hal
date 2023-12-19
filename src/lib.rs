@@ -37,7 +37,7 @@ use core::marker::PhantomData;
 use embedded_hal::{blocking::spi, digital::v2::OutputPin};
 
 pub mod error;
-use error::Max6675Error;
+pub use error::Max6675Error;
 
 /// A Temperature type from [`simmer`](https://docs.rs/crate/simmer/latest).
 pub use simmer::Temperature;
