@@ -36,57 +36,11 @@
 use core::marker::PhantomData;
 use embedded_hal::{blocking::spi, digital::v2::OutputPin};
 
+pub mod error;
+use error::Max6675Error;
+
+/// A Temperature type from [`simmer`](https://docs.rs/crate/simmer/latest).
 pub use simmer::Temperature;
-
-/// Some problem with the MAX6675 or its connections
-#[derive(Copy, Clone, Debug, PartialEq, PartialOrd)]
-pub enum Max6675Error<SpiError, CsError> {
-    SpiError(SpiError),
-    CsError(CsError),
-    OpenCircuitError,
-}
-
-// implicit `?` syntax for SpiError to Max6675Error
-impl<SpiError, CsError> core::convert::From<SpiError> for Max6675Error<SpiError, CsError> {
-    fn from(value: SpiError) -> Self {
-        Max6675Error::SpiError(value)
-    }
-}
-
-// print... if you must
-impl<SpiError, CsError> core::fmt::Display for Max6675Error<SpiError, CsError> {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        write!(
-            f,
-            "{}",
-            match self {
-                Max6675Error::SpiError(_) =>
-                    "An error occured while attempting to reach the MAX6675 over SPI.",
-                Max6675Error::OpenCircuitError => "The MAX6675 has detected an open circuit.",
-                Max6675Error::CsError(_) => "Detected a chip select pin error.",
-            }
-        )
-    }
-}
-
-// implement error if it's feasible
-// TODO: check for core::error::Error stability in CI. if so, fail a test - i get an email :3
-#[cfg(feature = "std")]
-impl<SpiError: core::fmt::Debug> std::error::Error for Max6675Error<SpiError, CsError> {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        None // other types typically don't impl error :p
-    }
-
-    fn description(&self) -> &str {
-        "error description is deprecated. use display instead!"
-    }
-
-    fn cause(&self) -> Option<&dyn std::error::Error> {
-        self.source() // (none)
-    }
-
-    fn provide<'a>(&'a self, request: &mut std::error::Request<'a>) {}
-}
 
 /// # Max6675
 ///
