@@ -101,4 +101,4 @@ jobs:
 
       - name: Check Arduino MEGA 2560 example
         working-directory: ./examples/mega2560
-        run: cargo +nightly build --release
+        run: cargo build --release --target avr-specs/avr-atmega2560.json
