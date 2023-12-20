@@ -47,7 +47,7 @@ let temp = max.read_celsius()? // ayo! we got the temperature
 
 ## Contributions
 
-Contributions are welcome to this project! Since it's pretty small, feel free to submit a PR whenever.
+Contributions are welcome to this project! Since it's pretty small, feel free to submit a PR whenever. You can also make an issue - I'll likely get to it soon!
 
 ## Help
 
