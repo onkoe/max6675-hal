@@ -4,7 +4,4 @@
 //! feature gate.
 
 #![cfg_attr(feature = "nightly", feature(error_in_core))]
-fn main() {
-    let x = 153;
-    let x = 314;
-}
+fn main() {}
