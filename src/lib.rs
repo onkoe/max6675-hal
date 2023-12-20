@@ -5,22 +5,41 @@
 //!
 //! ## Usage
 //!
-//! No matter which board you're using, you'll want to create an SPI representation
-//! for the type to use internally.
+//! This example code will change depending on which HAL device driver you're
+//! using. An `arduino-hal` project's SPI isn't like that of an `esp32-hal`
+//! project.
+//!
+//! However, you only have to focus on two parts:
+//!
+//! 1. A CS (chip select) pin as an `OutputPin`
+//! 2. Some SPI representation that doesn't exclusively own the CS pin
+//! (I'm looking at you, `linux-embedded-hal`!)
 //!
 //! Your SPI settings should use MSB (most significant bit) first, target a clock speed of
 //! at least 4mhz, and utilize SPI Mode 1.
 //!
-//! Below, you can see the general setup for an Arduino board.
-//!
 //! ```ignore
-//! #![no_std]
-//! #![no_main]
+//! // first, define what pins you're connecting to
+//! let so_pin = pins.("your miso pin").into_pull_up_input();
+//! let cs_pin = pins.("your cs pin").into_output();
+//! let sck_pin = pins.("your sck/clock pin").into_output();
 //!
-//! use arduino_hal::{prelude::*, spi::Spi};
+//! // you may need a mosi pin for your device's SPI, though the max6675 doesn't use one.
+//! // if so, just pick some pin that you're not using ☺️
+//! let dummy_mosi = pins.("some pin you're not using").into_output();
 //!
-//! // TODO
+//! let (spi, cs) = device-hal::spi::Spi::new(
+//!     sck_pin, dummy_mosi, so_pin, cs_pin,
+//!     device-hal::spi::Settings {
+//!         // pick some settings that roughly align like so:
+//!         data_order: MostSignificantFirst,
+//!         clock: 4MhzClockSpeed,
+//!         mode: embedded_hal::spi::MODE_1,
+//!     }
+//! );
+//! let mut max = Max6675::new(spi, cs)?; // your spi and chip select here
 //!
+//! let temp = max.read_celsius()? // ayo! we got the temperature
 //! ```
 //!
 //! ## Note
@@ -30,7 +49,6 @@
 //! to [check out its docs](https://docs.rs/crate/simmer/latest) for more info.
 
 // TODO: check naming n stuff for embedded-hal
-// TODO: CI
 
 use core::marker::PhantomData;
 use embedded_hal::{blocking::spi, digital::v2::OutputPin};
@@ -83,13 +101,13 @@ where
     /// // first, define what pins you're connecting to
     /// let so_pin = pins.("your miso pin").into_pull_up_input();
     /// let cs_pin = pins.("your cs pin").into_output();
-    /// let sck_pin = pins.("your sck/clock pin").into_output;
+    /// let sck_pin = pins.("your sck/clock pin").into_output();
     ///
     /// // you may need a mosi pin for your device's SPI, though the max6675 doesn't use one.
     /// // if so, just pick some pin that you're not using ☺️
     /// let dummy_mosi = pins.("some pin you're not using").into_output();
     ///
-    /// let (mut spi, mut cs) = device-hal::spi::Spi::new(
+    /// let (spi, cs) = device-hal::spi::Spi::new(
     ///     sck_pin, dummy_mosi, so_pin, cs_pin,
     ///     device-hal::spi::Settings {
     ///         // pick some settings that roughly align like so:
@@ -98,7 +116,7 @@ where
     ///         mode: embedded_hal::spi::MODE_1,
     ///     }
     /// );
-    /// let mut max = Max6675::new(spi, cs); // your spi and chip select here
+    /// let mut max = Max6675::new(spi, cs)?; // your spi and chip select here
     /// ```
     pub fn new(spi: Spi, mut chip_select: Cs) -> Result<Self, Max6675Error<SpiError, CsError>> {
         if let Err(e) = chip_select.set_high() {

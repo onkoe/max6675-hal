@@ -61,7 +61,7 @@ impl<SpiError, CsError> ufmt::uDebug for Max6675Error<SpiError, CsError> {
 }
 
 // implement error if it's feasible
-// TODO: check for core::error::Error stability in CI. if so, fail a test - i get an email :3
+// FIXME: use core::error::Error once stable! <3
 #[cfg(feature = "std")]
 impl<SpiError: std::fmt::Debug, CsError: std::fmt::Debug> std::error::Error
     for Max6675Error<SpiError, CsError>
