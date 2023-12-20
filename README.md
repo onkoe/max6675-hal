@@ -1,6 +1,6 @@
 # max6675-hal
 
-[<img alt="license badge" src="https://img.shields.io/crates/l/max6675_hal">](https://crates.io/crates/max6675-hal)
+[<img alt="license badge" src="https://img.shields.io/github/license/onkoe/max6675-hal">](https://github.com/onkoe/max6675-hal)
 [<img alt="docs.rs badge" src="https://img.shields.io/docsrs/max6675-hal">](https://docs.rs/max6675-hal)
 [<img alt="crates.io badge" src="https://img.shields.io/crates/dv/max6675-hal?label=crates.io">](https://crates.io/crates/max6675-hal)
 [<img alt="GitHub badge" src="https://img.shields.io/badge/github-onkoe/max6675--hal-6e5494">](https://github.com/onkoe/max6675-hal)
