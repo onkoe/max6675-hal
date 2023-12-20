@@ -81,6 +81,9 @@ jobs:
         with:
           toolchain: nightly
 
+      - name: Install `avr-gcc` tools
+        uses: bazhenov/action-avr-make@v1.0
+
       - name: Cache cargo registry
         uses: actions/cache@v3
         with:
