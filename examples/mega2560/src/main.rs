@@ -1,11 +1,8 @@
 #![no_std]
 #![no_main]
 
-use arduino_hal::{
-    prelude::_void_ResultVoidExt,
-    spi::{Settings, Spi},
-};
-use embedded_hal::{blocking::spi::Transfer, digital::v2::OutputPin as _};
+use arduino_hal::spi::{Settings, Spi};
+
 use max6675_hal::Max6675;
 use panic_halt as _;
 use ufmt::uwriteln;
@@ -21,7 +18,7 @@ fn main() -> ! {
     let dummy_mosi = pins.d51.into_output(); // unused with the max6675
 
     // yeah, it's a lotta stuff. sorry!
-    let (mut spi, mut chip_select) = Spi::new(
+    let (spi, chip_select) = Spi::new(
         dp.SPI,
         sck_pin,
         dummy_mosi,
@@ -41,6 +38,7 @@ fn main() -> ! {
 
     loop {
         arduino_hal::delay_ms(500); // delay between reads should be at least 220ms
+
         if let Ok(ref mut max) = max {
             match max.read_celsius() {
                 Ok(t) => uwriteln!(
