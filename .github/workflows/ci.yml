@@ -65,7 +65,7 @@ jobs:
 
       - name: Check feature gate
         working-directory: ./.github/workflows/ci
-        run: rustc main.rs --verbose --forbid warnings --out-dir /dev/null/
+        run: rustc main.rs --verbose --forbid warnings
 
   test_semver:
     runs-on: ubuntu-latest
