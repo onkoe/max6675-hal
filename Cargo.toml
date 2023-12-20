@@ -1,6 +1,6 @@
 [package]
-name = "max6675_hal"
 version = "0.2.0"
+name = "max6675-hal"
 edition = "2021"
 license = "MIT"
 

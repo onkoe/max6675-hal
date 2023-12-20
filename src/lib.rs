@@ -48,8 +48,6 @@
 //! You can change and play with the temperatures in various ways, so feel free
 //! to [check out its docs](https://docs.rs/crate/simmer/latest) for more info.
 
-// TODO: check naming n stuff for embedded-hal
-
 use core::marker::PhantomData;
 use embedded_hal::{blocking::spi, digital::v2::OutputPin};
 

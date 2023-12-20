@@ -1,10 +1,10 @@
-# max6675_hal
+# max6675-hal
 
-![license](https://img.shields.io/crates/l/max6675_hal)
-![docs.rs](https://img.shields.io/docsrs/max6675_hal)
-![crates.io](https://img.shields.io/crates/dv/max6675_hal?label=crates.io)
+![license](https://img.shields.io/crates/l/max6675-hal)
+![docs.rs](https://img.shields.io/docsrs/max6675-hal)
+![crates.io](https://img.shields.io/crates/dv/max6675-hal?label=crates.io)
 ![GitHub](https://img.shields.io/badge/github-onkoe/max6675__hal-6e5494)
-![Actions](https://img.shields.io/github/actions/workflow/status/onkoe/max6675_hal/ci.yml?branch=main)
+![Actions](https://img.shields.io/github/actions/workflow/status/onkoe/max6675-hal/ci.yml?branch=main)
 
 An embedded-hal driver for the MAX6675 digital thermocouple converter.
 
