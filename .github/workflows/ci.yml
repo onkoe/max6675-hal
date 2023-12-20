@@ -82,9 +82,7 @@ jobs:
           toolchain: nightly
 
       - name: Install `avr-gcc` tools
-        uses: bazhenov/action-avr-make@v1.0
-
-      - uses: awalsh128/cache-apt-pkgs-action@latest
+        uses: awalsh128/cache-apt-pkgs-action@latest
         with:
           packages: gcc-avr
           version: 1.0
