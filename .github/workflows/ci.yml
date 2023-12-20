@@ -63,6 +63,10 @@ jobs:
       - name: Run cargo-deny
         run: cargo deny check
 
+      - name: Check feature gate
+        working-directory: ./.github/workflows/ci
+        run: rustc main.rs --verbose --forbid warnings --out-dir /dev/null/
+
   test_semver:
     runs-on: ubuntu-latest
     steps:
@@ -109,7 +113,3 @@ jobs:
       - name: Check Arduino MEGA 2560 example
         working-directory: ./examples/mega2560
         run: cargo build --release --target avr-specs/avr-atmega2560.json
-
-      - name: Check feature gate
-        working-directory: ./.github/workflows/ci
-        run: rustc +nightly main.rs --verbose --forbid warnings --out-dir /dev/null/
