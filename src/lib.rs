@@ -129,6 +129,34 @@ where
         })
     }
 
+    /// Destructs the `MAX6675` into its bare components, as recommended by the
+    /// [HAL Design Patterns](https://doc.rust-lang.org/beta/embedded-book/design-patterns/hal/interoperability.html).
+    ///
+    /// ```
+    /// use max6675_hal::Max6675;
+    ///# use embedded_hal_mock::{
+    /// #     pin::{Mock as PinMock, State as PinState, Transaction as PinTransaction},
+    /// #     spi::{Mock as SpiMock, Transaction as SpiTransaction},
+    /// # };
+    /// #
+    /// # let temp = ((400 << 3) as u16).to_be_bytes().to_vec(); // 100 degrees celsius
+    /// #
+    /// # let cs_exp = [
+    /// #    PinTransaction::set(PinState::High),
+    /// #     PinTransaction::set(PinState::Low),
+    /// #     PinTransaction::set(PinState::High),
+    /// # ];
+    /// #
+    /// # let spi = SpiMock::new(&[SpiTransaction::transfer(vec![0, 0], temp)]);
+    /// # let cs = PinMock::new(&cs_exp);
+    /// // (pretend there's some spi/chip select setup code)
+    ///
+    /// let mut max = Max6675::new(spi, cs).unwrap();
+    /// let (spi, cs) = max.free();
+    pub fn free(self) -> (Spi, Cs) {
+        (self.spi, self.chip_select)
+    }
+
     /// Tries to read thermocouple temperature, leaving it as a raw ADC count.
     ///
     /// ```

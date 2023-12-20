@@ -34,6 +34,7 @@ fn main() -> ! {
     let mut serial = arduino_hal::default_serial!(dp, pins, 57600);
 
     let mut max = Max6675::new(spi, chip_select);
+
     arduino_hal::delay_ms(500);
 
     loop {
@@ -48,13 +49,13 @@ fn main() -> ! {
                 )
                 .unwrap(),
                 Err(e) => match e {
-                    max6675-hal::Max6675Error::SpiError(_) => {
+                    max6675_hal::Max6675Error::SpiError(_) => {
                         uwriteln!(&mut serial, "spi error").unwrap()
                     }
-                    max6675-hal::Max6675Error::OpenCircuitError => {
+                    max6675_hal::Max6675Error::OpenCircuitError => {
                         uwriteln!(&mut serial, "open circuit!!!").unwrap()
                     }
-                    max6675-hal::Max6675Error::CsError(_) => {
+                    max6675_hal::Max6675Error::CsError(_) => {
                         uwriteln!(&mut serial, "cs error ahhhh!!!").unwrap()
                     }
                 },
