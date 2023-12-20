@@ -119,9 +119,9 @@ where
     /// let mut max = Max6675::new(spi, cs)?; // your spi and chip select here
     /// ```
     pub fn new(spi: Spi, mut chip_select: Cs) -> Result<Self, Max6675Error<SpiError, CsError>> {
-        if let Err(e) = chip_select.set_high() {
-            return Err(Max6675Error::CsError(e));
-        }
+        chip_select
+            .set_high()
+            .map_err(|e| Max6675Error::CsError(e))?;
 
         Ok(Self {
             spi,
@@ -158,15 +158,15 @@ where
     pub fn read_raw(&mut self) -> Result<[u8; 2], Max6675Error<SpiError, CsError>> {
         let mut buf: [u8; 2] = [0_u8; 2];
 
-        if let Err(e) = self.chip_select.set_low() {
-            return Err(Max6675Error::CsError(e));
-        }
+        self.chip_select
+            .set_low()
+            .map_err(|e| Max6675Error::CsError(e))?;
 
         self.spi.transfer(&mut buf)?;
 
-        if let Err(e) = self.chip_select.set_high() {
-            return Err(Max6675Error::CsError(e));
-        }
+        self.chip_select
+            .set_high()
+            .map_err(|e| Max6675Error::CsError(e))?;
 
         Ok(buf)
     }
