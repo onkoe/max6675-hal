@@ -19,7 +19,7 @@
 //!
 //! use arduino_hal::{prelude::*, spi::Spi};
 //!
-//!
+//! // TODO
 //!
 //! ```
 //!
@@ -29,9 +29,8 @@
 //! You can change and play with the temperatures in various ways, so feel free
 //! to [check out its docs](https://docs.rs/crate/simmer/latest) for more info.
 
-// TODO: fix docs
 // TODO: check naming n stuff for embedded-hal
-// TODO: examples folder (with crates. use arduino, linux, etc.)
+// TODO: CI
 
 use core::marker::PhantomData;
 use embedded_hal::{blocking::spi, digital::v2::OutputPin};
