@@ -17,6 +17,7 @@ allow = [
 [bans]
 # disable duplicate crates
 multiple-versions = "deny"
+skip = [{ name = "nb", version = ">= 0.1" }]
 
 [advisories]
 # deny crates with some problems...
