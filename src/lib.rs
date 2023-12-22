@@ -49,7 +49,7 @@
 //! to [check out its docs](https://docs.rs/crate/simmer/latest) for more info.
 
 use core::marker::PhantomData;
-use embedded_hal::{blocking::spi, digital::v2::OutputPin};
+use embedded_hal::spi::SpiDevice;
 
 pub mod error;
 pub use error::Max6675Error;
@@ -62,26 +62,20 @@ pub use simmer::Temperature;
 /// A representation of the MAX6675 digital thermocouple converter.
 /// Maintains an SPI connection to the device.
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct Max6675<Cs, CsError, Spi, SpiError>
+pub struct Max6675<Spi, SpiError>
 where
-    Spi: spi::Transfer<u8, Error = SpiError> + spi::Write<u8, Error = SpiError>,
-    Cs: OutputPin<Error = CsError>,
+    Spi: SpiDevice<Error = SpiError>,
 {
     /// SPI connection
     spi: Spi,
 
-    /// Chip select pin
-    chip_select: Cs,
-
     // we're using the generic spi error, but not here!
     _spi_err: PhantomData<SpiError>,
-    _cs_err: PhantomData<CsError>,
 }
 
-impl<Cs, CsError, Spi, SpiError> Max6675<Cs, CsError, Spi, SpiError>
+impl<Spi, SpiError> Max6675<Spi, SpiError>
 where
-    Spi: spi::Transfer<u8, Error = SpiError> + spi::Write<u8, Error = SpiError>,
-    Cs: OutputPin<Error = CsError>,
+    Spi: SpiDevice<Error = SpiError>,
 {
     /// Creates a new Max6675 representation.
     ///
@@ -116,16 +110,10 @@ where
     /// );
     /// let mut max = Max6675::new(spi, cs)?; // your spi and chip select here
     /// ```
-    pub fn new(spi: Spi, mut chip_select: Cs) -> Result<Self, Max6675Error<SpiError, CsError>> {
-        chip_select
-            .set_high()
-            .map_err(|e| Max6675Error::CsError(e))?;
-
+    pub fn new(spi: Spi) -> Result<Self, Max6675Error<SpiError>> {
         Ok(Self {
             spi,
-            chip_select,
             _spi_err: PhantomData,
-            _cs_err: PhantomData,
         })
     }
 
@@ -151,8 +139,8 @@ where
     ///
     /// let mut max = Max6675::new(spi, cs).unwrap();
     /// let (spi, cs) = max.free();
-    pub fn free(self) -> (Spi, Cs) {
-        (self.spi, self.chip_select)
+    pub fn free(self) -> Spi {
+        self.spi
     }
 
     /// Tries to read thermocouple temperature, leaving it as a raw ADC count.
@@ -179,24 +167,15 @@ where
     /// let mut max = Max6675::new(spi, cs).unwrap();
     /// assert_eq!(max.read_raw().unwrap(), [0xc, 0x80]);
     /// ```
-    pub fn read_raw(&mut self) -> Result<[u8; 2], Max6675Error<SpiError, CsError>> {
+    pub fn read_raw(&mut self) -> Result<[u8; 2], Max6675Error<SpiError>> {
         let mut buf: [u8; 2] = [0_u8; 2];
-
-        self.chip_select
-            .set_low()
-            .map_err(|e| Max6675Error::CsError(e))?;
-
-        self.spi.transfer(&mut buf)?;
-
-        self.chip_select
-            .set_high()
-            .map_err(|e| Max6675Error::CsError(e))?;
+        self.spi.read(&mut buf)?;
 
         Ok(buf)
     }
 
     /// Internal function to convert a `read_raw()` into a parsable `u16`.
-    fn process_raw(&mut self) -> Result<u16, Max6675Error<SpiError, CsError>> {
+    fn process_raw(&mut self) -> Result<u16, Max6675Error<SpiError>> {
         Ok(u16::from_be_bytes(self.read_raw()?))
     }
 
@@ -225,7 +204,7 @@ where
     /// let mut max = Max6675::new(spi, cs).unwrap();
     /// assert_approx_eq!(max.read_celsius().unwrap().into_inner(), 100_f32);
     /// ```
-    pub fn read_celsius(&mut self) -> Result<Temperature, Max6675Error<SpiError, CsError>> {
+    pub fn read_celsius(&mut self) -> Result<Temperature, Max6675Error<SpiError>> {
         let raw = self.process_raw()?;
 
         if raw & 0x04 != 0 {
@@ -261,7 +240,7 @@ where
     /// let mut max = Max6675::new(spi, cs).unwrap();
     /// assert_approx_eq!(max.read_fahrenheit().unwrap().into_inner(), 68_f32);
     /// ```
-    pub fn read_fahrenheit(&mut self) -> Result<Temperature, Max6675Error<SpiError, CsError>> {
+    pub fn read_fahrenheit(&mut self) -> Result<Temperature, Max6675Error<SpiError>> {
         Ok(self.read_celsius()?.to_fahrenheit())
     }
 
@@ -290,7 +269,7 @@ where
     /// let mut max = Max6675::new(spi, cs).unwrap();
     /// assert_approx_eq!(max.read_kelvin().unwrap().into_inner(), 373.15_f32);
     /// ```
-    pub fn read_kelvin(&mut self) -> Result<Temperature, Max6675Error<SpiError, CsError>> {
+    pub fn read_kelvin(&mut self) -> Result<Temperature, Max6675Error<SpiError>> {
         Ok(self.read_celsius()?.to_kelvin())
     }
 }
