@@ -1,0 +1,19 @@
+[package]
+name = "linux"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.76"
+embedded-hal = "1.0.0-rc.3"
+
+[dependencies.linux-embedded-hal]
+git = "https://github.com/rust-embedded/linux-embedded-hal"
+default-features = false
+features = ["spi"]
+
+[dependencies.max6675-hal]
+path = "../../"
+features = ["std"]
