@@ -1,6 +1,6 @@
 [package]
 name = "max6675-hal"
-version = "0.3.1"
+version = "0.4.0-alpha.1"
 edition = "2021"
 description = "An embedded-hal driver for the MAX6675 digital thermocouple converter."
 license = "MIT"
@@ -18,10 +18,14 @@ std = []
 
 [dependencies]
 simmer = { version = "0.3", features = ["f32"] }
-embedded-hal = { version = "0.2", features = ["unproven"] }
+embedded-hal = { version = "1.0.0-r3", features = [
+] } # TODO: change to 1.0 when applicable!
 ufmt = "0.2"
 
 [dev-dependencies]
 anyhow = "1.0"
 assert_approx_eq = "1.1"
-embedded-hal-mock = "0.9"
+embedded-hal-mock = { version = "0.10.0-rc.4", features = [
+    "eh1",
+] } # TODO: change to 0.10.0 when applicable!
+once_cell = "1.19.0"
