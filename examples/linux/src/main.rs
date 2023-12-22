@@ -1,3 +1,5 @@
+use std::{thread::sleep, time::Duration};
+
 use linux_embedded_hal::SpidevDevice;
 use max6675_hal::Max6675;
 
@@ -14,6 +16,7 @@ fn main() -> anyhow::Result<()> {
     loop {
         // he's spi-derpig
         let temp = max.read_fahrenheit()?;
-        println!("temp in f: {temp}")
+        println!("temp in f: {temp}");
+        sleep(Duration::from_secs_f64(0.5));
     }
 }
