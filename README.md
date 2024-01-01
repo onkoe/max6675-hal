@@ -8,6 +8,10 @@
 
 An embedded-hal driver for the MAX6675 digital thermocouple converter.
 
+## Note
+
+I plan to use `embedded-hal@1.0` by default but create a feature flag to allow for older versions, too! However, I'm still waiting on the full release - a few issues [still block 1.0](https://github.com/rust-embedded/embedded-hal/issues/177).
+
 ## Usage
 
 This example code will change depending on which HAL device driver you're using. An `arduino-hal` project's SPI isn't like that of an `esp32-hal` project.
