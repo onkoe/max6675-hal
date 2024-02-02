@@ -14,12 +14,11 @@ bench = false
 panic-halt = "0.2.0"
 ufmt = "0.2.0"
 nb = "0.1.2"
-embedded-hal = "0.2.3"
+embedded-hal = "1.0"
 ufmt_float = "0.2.0"
 
 [dependencies.arduino-hal]
 git = "https://github.com/rahix/avr-hal"
-rev = "190f2c3cb8d29e10f71119352b912369dc5a1fb7"
 features = ["arduino-mega2560"]
 
 [dependencies.max6675-hal]
