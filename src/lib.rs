@@ -9,11 +9,8 @@
 //! using. An `arduino-hal` project's SPI isn't like that of an `esp32-hal`
 //! project.
 //!
-//! However, you only have to focus on two parts:
-//!
-//! 1. A CS (chip select) pin as an `OutputPin`
-//! 2. Some SPI representation that doesn't exclusively own the CS pin
-//! (I'm looking at you, `linux-embedded-hal`!)
+//! However, you only have to focus on using a device
+//! with an exposed SPI interface.
 //!
 //! Your SPI settings should use MSB (most significant bit) first, target a clock speed of
 //! at least 4mhz, and utilize SPI Mode 1.
@@ -87,8 +84,8 @@ where
     ///
     /// # Usage
     ///
-    /// Since the `Spi` (SPI) and `Cs` (chip select) arguments are generic,
-    /// you'll have to make some decisions based on the hardware you're using!
+    /// Since the `Spi` (SPI) argument is generic, you'll have to make some
+    /// decisions based on the hardware you're using!
     ///
     /// Please follow this general template:
     ///

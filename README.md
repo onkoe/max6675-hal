@@ -16,14 +16,11 @@ I plan to use `embedded-hal@1.0` by default but create a feature flag to allow f
 
 This example code will change depending on which HAL device driver you're using. An `arduino-hal` project's SPI isn't like that of an `esp32-hal` project.
 
-However, you only have to focus on two parts:
-
-1. A CS (chip select) pin as an `OutputPin`
-2. Some SPI representation that doesn't exclusively own the CS pin (I'm looking at you, `linux-embedded-hal`!)
+However, you only have to focus on using a device with an exposed SPI interface.
 
 Your SPI settings should use MSB (most significant bit) first, target a clock speed of at least 4mhz, and utilize SPI Mode 1.
 
-After both are good, pass them into the `Max6675::new(spi, chip_select)` constructor. Ta-da! Your MAX6675 gets put to good use.
+After you've gotten a working SPI connection, pass it into the `Max6675::new(spi)` constructor. Ta-da! Your MAX6675 will be put to good use.
 
 ```rust
 // first, define what pins you're connecting to
@@ -35,7 +32,7 @@ let sck_pin = pins.("your sck/clock pin").into_output();
 // if so, just pick some pin that you're not using ☺️
 let dummy_mosi = pins.("some pin you're not using").into_output();
 
-let (spi, cs) = device-hal::spi::Spi::new(
+let spi = device-hal::spi::Spi::new(
     sck_pin, dummy_mosi, so_pin, cs_pin,
     device-hal::spi::Settings {
         // pick some settings that roughly align like so:
@@ -44,7 +41,7 @@ let (spi, cs) = device-hal::spi::Spi::new(
         mode: embedded_hal::spi::MODE_1,
     }
 );
-let mut max = Max6675::new(spi, cs)?; // your spi and chip select here
+let mut max = Max6675::new(spi)?; // your spi here
 
 let temp = max.read_celsius()? // ayo! we got the temperature
 ```
@@ -55,6 +52,6 @@ Contributions are welcome to this project! Since it's pretty small, feel free to
 
 ## Help
 
-Please feel free to make an issue if you experience any problems!
+Please don't hesitate to make an issue if you experience any problems.
 
-If you can, please submit a [`hw-probe` report](https://linux-hardware.org/?view=howto) alongside any error messages or useful logs you have!
+If you can, please submit a [`hw-probe` report](https://linux-hardware.org/?view=howto) alongside any error messages or useful logs you have.
