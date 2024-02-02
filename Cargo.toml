@@ -24,4 +24,4 @@ ufmt = "0.2"
 [dev-dependencies]
 anyhow = "1.0"
 assert_approx_eq = "1.1"
-embedded-hal-mock = "0.9"
+embedded-hal-mock = {  version = "0.10", features = ["eh1"] }
