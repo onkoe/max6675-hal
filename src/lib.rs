@@ -49,7 +49,7 @@
 //! to [check out its docs](https://docs.rs/crate/simmer/latest) for more info.
 
 use core::marker::PhantomData;
-use embedded_hal::{blocking::spi, digital::v2::OutputPin};
+use embedded_hal::spi::{self, SpiDevice};
 
 pub mod error;
 pub use error::Max6675Error;
@@ -62,26 +62,23 @@ pub use simmer::Temperature;
 /// A representation of the MAX6675 digital thermocouple converter.
 /// Maintains an SPI connection to the device.
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct Max6675<Cs, CsError, Spi, SpiError>
+pub struct Max6675<Spi, SpiError>
 where
-    Spi: spi::Transfer<u8, Error = SpiError> + spi::Write<u8, Error = SpiError>,
-    Cs: OutputPin<Error = CsError>,
+    Spi: SpiDevice,
+    SpiError: spi::Error,
 {
     /// SPI connection
     spi: Spi,
 
-    /// Chip select pin
-    chip_select: Cs,
-
     // we're using the generic spi error, but not here!
     _spi_err: PhantomData<SpiError>,
-    _cs_err: PhantomData<CsError>,
 }
 
-impl<Cs, CsError, Spi, SpiError> Max6675<Cs, CsError, Spi, SpiError>
+impl<Spi, SpiError> Max6675<Spi, SpiError>
 where
-    Spi: spi::Transfer<u8, Error = SpiError> + spi::Write<u8, Error = SpiError>,
-    Cs: OutputPin<Error = CsError>,
+    Spi: SpiDevice,
+    SpiError: spi::Error,
+    Max6675Error<SpiError>: From<<Spi as spi::ErrorType>::Error>,
 {
     /// Creates a new Max6675 representation.
     ///
@@ -116,16 +113,10 @@ where
     /// );
     /// let mut max = Max6675::new(spi, cs)?; // your spi and chip select here
     /// ```
-    pub fn new(spi: Spi, mut chip_select: Cs) -> Result<Self, Max6675Error<SpiError, CsError>> {
-        chip_select
-            .set_high()
-            .map_err(|e| Max6675Error::CsError(e))?;
-
+    pub fn new(spi: Spi) -> Result<Self, Max6675Error<SpiError>> {
         Ok(Self {
             spi,
-            chip_select,
             _spi_err: PhantomData,
-            _cs_err: PhantomData,
         })
     }
 
