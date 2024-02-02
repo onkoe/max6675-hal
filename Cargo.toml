@@ -18,7 +18,7 @@ std = []
 
 [dependencies]
 simmer = { version = "0.3", features = ["f32"] }
-embedded-hal = { version = "0.2", features = ["unproven"] }
+embedded-hal = "1.0"
 ufmt = "0.2"
 
 [dev-dependencies]
