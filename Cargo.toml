@@ -1,6 +1,6 @@
 [package]
 name = "max6675-hal"
-version = "1.0.0-rc1"
+version = "1.0.0-rc.1"
 edition = "2021"
 description = "An embedded-hal driver for the MAX6675 digital thermocouple converter."
 license = "MIT"
