@@ -10,7 +10,7 @@ use max6675_hal::{error::Max6675Error, *};
 use once_cell::sync::Lazy;
 
 // expects 37° C - around body temp
-static EXP_TEMP: Lazy<[Transaction; 3]> = Lazy::new(|| {
+static EXP_TEMP: Lazy<[Transaction<u8>; 3]> = Lazy::new(|| {
     [
         Transaction::transaction_start(),
         Transaction::read_vec(((148 << 3) as u16).to_be_bytes().to_vec()),
@@ -53,10 +53,10 @@ fn test_raw() {
 }
 
 // long ahh types
-type Max = Max6675<Generic<Transaction>, embedded_hal::spi::ErrorKind>;
+type Max = Max6675<Generic<Transaction<u8>>, embedded_hal::spi::ErrorKind>;
 type MaxError = Max6675Error<embedded_hal::spi::ErrorKind>;
 
-fn make_max6675(expected: impl Into<Vec<Transaction>>) -> Result<Max, MaxError> {
+fn make_max6675(expected: impl Into<Vec<Transaction<u8>>>) -> Result<Max, MaxError> {
     let expected = expected.into();
     let spi = Mock::new(&expected);
 
