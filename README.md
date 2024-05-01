@@ -6,7 +6,7 @@
 [<img alt="GitHub badge" src="https://img.shields.io/badge/github-onkoe/max6675--hal-6e5494">](https://github.com/onkoe/max6675-hal)
 [<img alt="GitHub Actions badge" src="https://img.shields.io/github/actions/workflow/status/onkoe/max6675-hal/ci.yml?branch=main">](https://github.com/onkoe/max6675-hal/actions)
 
-An embedded-hal driver for the MAX6675 digital thermocouple converter.
+An `embedded-hal` driver for the MAX6675 digital thermocouple converter.
 
 ## Warning
 
@@ -63,6 +63,6 @@ Contributions are welcome to this project! Since it's pretty small, feel free to
 
 ## Help
 
-Please feel free to make an issue if you experience any problems!
+Please don't hesitate to make an issue if you experience any problems!
 
 If you can, please submit a [`hw-probe` report](https://linux-hardware.org/?view=howto) alongside any error messages or useful logs you have!
