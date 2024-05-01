@@ -9,11 +9,8 @@
 //! using. An `arduino-hal` project's SPI isn't like that of an `esp32-hal`
 //! project.
 //!
-//! However, you only have to focus on two parts:
-//!
-//! 1. A CS (chip select) pin as an `OutputPin`
-//! 2. Some SPI representation that doesn't exclusively own the CS pin
-//! (I'm looking at you, `linux-embedded-hal`!)
+//! However, you only need to focus on your device's SPI implementation!
+//! (thanks, `embedded-hal` 1.0 ☺️)
 //!
 //! Your SPI settings should use MSB (most significant bit) first, target a clock speed of
 //! at least 4mhz, and utilize SPI Mode 1.
@@ -28,7 +25,7 @@
 //! // if so, just pick some pin that you're not using ☺️
 //! let dummy_mosi = pins.("some pin you're not using").into_output();
 //!
-//! let (spi, cs) = device-hal::spi::Spi::new(
+//! let (spi, _) = device-hal::spi::Spi::new(
 //!     sck_pin, dummy_mosi, so_pin, cs_pin,
 //!     device-hal::spi::Settings {
 //!         // pick some settings that roughly align like so:
@@ -37,7 +34,7 @@
 //!         mode: embedded_hal::spi::MODE_1,
 //!     }
 //! );
-//! let mut max = Max6675::new(spi, cs)?; // your spi and chip select here
+//! let mut max = Max6675::new(spi)?; // your spi and chip select here
 //!
 //! let temp = max.read_celsius()? // ayo! we got the temperature
 //! ```
@@ -49,7 +46,7 @@
 //! to [check out its docs](https://docs.rs/crate/simmer/latest) for more info.
 
 use core::marker::PhantomData;
-use embedded_hal::{blocking::spi, digital::v2::OutputPin};
+use embedded_hal::spi::SpiDevice;
 
 pub mod error;
 pub use error::Max6675Error;
@@ -62,26 +59,20 @@ pub use simmer::Temperature;
 /// A representation of the MAX6675 digital thermocouple converter.
 /// Maintains an SPI connection to the device.
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct Max6675<Cs, CsError, Spi, SpiError>
+pub struct Max6675<Spi, SpiError>
 where
-    Spi: spi::Transfer<u8, Error = SpiError> + spi::Write<u8, Error = SpiError>,
-    Cs: OutputPin<Error = CsError>,
+    Spi: SpiDevice<Error = SpiError>,
 {
     /// SPI connection
     spi: Spi,
 
-    /// Chip select pin
-    chip_select: Cs,
-
     // we're using the generic spi error, but not here!
     _spi_err: PhantomData<SpiError>,
-    _cs_err: PhantomData<CsError>,
 }
 
-impl<Cs, CsError, Spi, SpiError> Max6675<Cs, CsError, Spi, SpiError>
+impl<Spi, SpiError> Max6675<Spi, SpiError>
 where
-    Spi: spi::Transfer<u8, Error = SpiError> + spi::Write<u8, Error = SpiError>,
-    Cs: OutputPin<Error = CsError>,
+    Spi: SpiDevice<Error = SpiError>,
 {
     /// Creates a new Max6675 representation.
     ///
@@ -90,8 +81,8 @@ where
     ///
     /// # Usage
     ///
-    /// Since the `Spi` (SPI) and `Cs` (chip select) arguments are generic,
-    /// you'll have to make some decisions based on the hardware you're using!
+    /// Since the `Spi` (SPI) arguments is generic, you'll have to make some
+    /// decisions based on the hardware you're using!
     ///
     /// Please follow this general template:
     ///
@@ -105,7 +96,7 @@ where
     /// // if so, just pick some pin that you're not using ☺️
     /// let dummy_mosi = pins.("some pin you're not using").into_output();
     ///
-    /// let (spi, cs) = device-hal::spi::Spi::new(
+    /// let (spi, _) = device-hal::spi::Spi::new(
     ///     sck_pin, dummy_mosi, so_pin, cs_pin,
     ///     device-hal::spi::Settings {
     ///         // pick some settings that roughly align like so:
@@ -114,18 +105,12 @@ where
     ///         mode: embedded_hal::spi::MODE_1,
     ///     }
     /// );
-    /// let mut max = Max6675::new(spi, cs)?; // your spi and chip select here
+    /// let mut max = Max6675::new(spi)?; // your spi here
     /// ```
-    pub fn new(spi: Spi, mut chip_select: Cs) -> Result<Self, Max6675Error<SpiError, CsError>> {
-        chip_select
-            .set_high()
-            .map_err(|e| Max6675Error::CsError(e))?;
-
+    pub fn new(spi: Spi) -> Result<Self, Max6675Error<SpiError>> {
         Ok(Self {
             spi,
-            chip_select,
             _spi_err: PhantomData,
-            _cs_err: PhantomData,
         })
     }
 
@@ -133,99 +118,81 @@ where
     /// [HAL Design Patterns](https://doc.rust-lang.org/beta/embedded-book/design-patterns/hal/interoperability.html).
     ///
     /// ```
-    /// use max6675_hal::Max6675;
-    ///# use embedded_hal_mock::{
-    /// #     pin::{Mock as PinMock, State as PinState, Transaction as PinTransaction},
-    /// #     spi::{Mock as SpiMock, Transaction as SpiTransaction},
+    /// # use embedded_hal_mock::{
+    /// #     common::Generic,
+    /// #     eh1::spi::{Mock, Transaction},
     /// # };
-    /// #
-    /// # let temp = ((400 << 3) as u16).to_be_bytes().to_vec(); // 100 degrees celsius
-    /// #
-    /// # let cs_exp = [
-    /// #    PinTransaction::set(PinState::High)
-    /// # ];
-    /// #
-    /// # let spi = SpiMock::new(&[SpiTransaction::transfer(vec![0, 0], temp)]);
-    /// # let cs = PinMock::new(&cs_exp);
-    /// // (pretend there's some spi/chip select setup code)
+    /// use max6675_hal::Max6675;
     ///
-    /// let mut max = Max6675::new(spi, cs).unwrap();
-    /// let (spi, cs) = max.free();
-    pub fn free(self) -> (Spi, Cs) {
-        (self.spi, self.chip_select)
+    /// # let spi = Mock::new(&[].to_vec());
+    /// // pretend there's some spi setup code above...
+    /// let mut max = Max6675::new(spi).unwrap();
+    /// let mut spi = max.free();
+    /// # spi.done();
+    pub fn free(self) -> Spi {
+        self.spi
     }
 
     /// Tries to read thermocouple temperature, leaving it as a raw ADC count.
     ///
     /// ```
-    /// use max6675_hal::Max6675;
-    ///# use embedded_hal_mock::{
-    /// #     pin::{Mock as PinMock, State as PinState, Transaction as PinTransaction},
-    /// #     spi::{Mock as SpiMock, Transaction as SpiTransaction},
+    /// # use embedded_hal_mock::{
+    /// #     common::Generic,
+    /// #     eh1::spi::{Mock, Transaction},
     /// # };
+    /// use max6675_hal::Max6675;
     /// #
-    /// let temp = ((400 << 3) as u16).to_be_bytes().to_vec(); // 100 degrees celsius
+    /// # let temp = ((400 << 3) as u16).to_be_bytes().to_vec();
+    /// # let expected = [
+    /// #     Transaction::transaction_start(),
+    /// #     Transaction::read_vec(((400 << 3) as u16).to_be_bytes().to_vec()),
+    /// #     Transaction::transaction_end(),
+    /// # ]
+    /// # .to_vec();
     ///
-    /// # let cs_exp = [
-    /// #    PinTransaction::set(PinState::High),
-    /// #     PinTransaction::set(PinState::Low),
-    /// #     PinTransaction::set(PinState::High),
-    /// # ];
-    /// #
-    /// # let spi = SpiMock::new(&[SpiTransaction::transfer(vec![0, 0], temp)]);
-    /// # let cs = PinMock::new(&cs_exp);
-    /// // (pretend there's some spi/chip select setup code)
-    ///
-    /// let mut max = Max6675::new(spi, cs).unwrap();
+    /// # let spi = Mock::new(&expected);
+    /// // pretend there's some spi setup code above...
+    /// let mut max = Max6675::new(spi).unwrap();
     /// assert_eq!(max.read_raw().unwrap(), [0xc, 0x80]);
+    /// # max.free().done();
     /// ```
-    pub fn read_raw(&mut self) -> Result<[u8; 2], Max6675Error<SpiError, CsError>> {
+    pub fn read_raw(&mut self) -> Result<[u8; 2], Max6675Error<SpiError>> {
         let mut buf: [u8; 2] = [0_u8; 2];
-
-        self.chip_select
-            .set_low()
-            .map_err(|e| Max6675Error::CsError(e))?;
-
-        self.spi.transfer(&mut buf)?;
-
-        self.chip_select
-            .set_high()
-            .map_err(|e| Max6675Error::CsError(e))?;
+        self.spi.read(&mut buf)?;
 
         Ok(buf)
     }
 
     /// Internal function to convert a `read_raw()` into a parsable `u16`.
-    fn process_raw(&mut self) -> Result<u16, Max6675Error<SpiError, CsError>> {
+    fn process_raw(&mut self) -> Result<u16, Max6675Error<SpiError>> {
         Ok(u16::from_be_bytes(self.read_raw()?))
     }
 
     /// Tries to read the thermocouple's temperature in Celsius.
     ///
     /// ```
-    /// use max6675_hal::Max6675;
     /// # use assert_approx_eq::assert_approx_eq;
     /// # use embedded_hal_mock::{
-    /// #     pin::{Mock as PinMock, State as PinState, Transaction as PinTransaction},
-    /// #     spi::{Mock as SpiMock, Transaction as SpiTransaction},
+    /// #     common::Generic,
+    /// #     eh1::spi::{Mock, Transaction},
     /// # };
+    /// use max6675_hal::Max6675;
     /// #
-    /// # let temp = ((400 << 3) as u16).to_be_bytes().to_vec(); // 100 degrees celsius
+    /// # let temp = ((400 << 3) as u16).to_be_bytes().to_vec();
+    /// # let expected = [
+    /// #     Transaction::transaction_start(),
+    /// #     Transaction::read_vec(((400 << 3) as u16).to_be_bytes().to_vec()),
+    /// #     Transaction::transaction_end(),
+    /// # ]
+    /// # .to_vec();
     ///
-    /// # let cs_exp = [
-    /// #    PinTransaction::set(PinState::High),
-    /// #     PinTransaction::set(PinState::Low),
-    /// #     PinTransaction::set(PinState::High),
-    /// # ];
-    /// #
-    /// # let spi = SpiMock::new(&[SpiTransaction::transfer(vec![0, 0], temp)]);
-    /// # let cs = PinMock::new(&cs_exp);
-    /// // (pretend there's some spi/chip select setup code)
-    ///
-    /// let mut max = Max6675::new(spi, cs).unwrap();
+    /// # let spi = Mock::new(&expected);
+    /// // pretend there's some spi setup code above...
+    /// let mut max = Max6675::new(spi).unwrap();
     /// assert_approx_eq!(max.read_celsius().unwrap().into_inner(), 100_f32);
+    /// # max.free().done();
     /// ```
-    pub fn read_celsius(&mut self) -> Result<Temperature, Max6675Error<SpiError, CsError>> {
+    pub fn read_celsius(&mut self) -> Result<Temperature, Max6675Error<SpiError>> {
         let raw = self.process_raw()?;
 
         if raw & 0x04 != 0 {
@@ -239,58 +206,56 @@ where
     /// Tries to read the thermocouple's temperature in Fahrenheit.
     ///
     /// ```
-    /// use max6675_hal::Max6675;
     /// # use assert_approx_eq::assert_approx_eq;
     /// # use embedded_hal_mock::{
-    /// #     pin::{Mock as PinMock, State as PinState, Transaction as PinTransaction},
-    /// #     spi::{Mock as SpiMock, Transaction as SpiTransaction},
+    /// #     common::Generic,
+    /// #     eh1::spi::{Mock, Transaction},
     /// # };
+    /// use max6675_hal::Max6675;
     /// #
-    /// # let temp = ((80 << 3) as u16).to_be_bytes().to_vec(); // 68 degrees fahrenheit
+    /// # let temp = ((400 << 3) as u16).to_be_bytes().to_vec();
+    /// # let expected = [
+    /// #     Transaction::transaction_start(),
+    /// #     Transaction::read_vec(((80 << 3) as u16).to_be_bytes().to_vec()), // 68° F
+    /// #     Transaction::transaction_end(),
+    /// # ]
+    /// # .to_vec();
     ///
-    /// # let cs_exp = [
-    /// #    PinTransaction::set(PinState::High),
-    /// #     PinTransaction::set(PinState::Low),
-    /// #     PinTransaction::set(PinState::High),
-    /// # ];
-    /// #
-    /// # let spi = SpiMock::new(&[SpiTransaction::transfer(vec![0, 0], temp)]);
-    /// # let cs = PinMock::new(&cs_exp);
-    /// // (pretend there's some spi/chip select setup code)
-    ///
-    /// let mut max = Max6675::new(spi, cs).unwrap();
+    /// # let spi = Mock::new(&expected);
+    /// // pretend there's some spi setup code above...
+    /// let mut max = Max6675::new(spi).unwrap();
     /// assert_approx_eq!(max.read_fahrenheit().unwrap().into_inner(), 68_f32);
+    /// # max.free().done();
     /// ```
-    pub fn read_fahrenheit(&mut self) -> Result<Temperature, Max6675Error<SpiError, CsError>> {
+    pub fn read_fahrenheit(&mut self) -> Result<Temperature, Max6675Error<SpiError>> {
         Ok(self.read_celsius()?.to_fahrenheit())
     }
 
     /// Tries to read the thermocouple's temperature in Kelvin.
     ///
     /// ```
-    /// use max6675_hal::Max6675;
     /// # use assert_approx_eq::assert_approx_eq;
     /// # use embedded_hal_mock::{
-    /// #     pin::{Mock as PinMock, State as PinState, Transaction as PinTransaction},
-    /// #     spi::{Mock as SpiMock, Transaction as SpiTransaction},
+    /// #     common::Generic,
+    /// #     eh1::spi::{Mock, Transaction},
     /// # };
+    /// use max6675_hal::Max6675;
     /// #
-    /// # let temp = ((400 << 3) as u16).to_be_bytes().to_vec(); // 68 degrees fahrenheit
+    /// # let temp = ((400 << 3) as u16).to_be_bytes().to_vec();
+    /// # let expected = [
+    /// #     Transaction::transaction_start(),
+    /// #     Transaction::read_vec(((400 << 3) as u16).to_be_bytes().to_vec()),
+    /// #     Transaction::transaction_end(),
+    /// # ]
+    /// # .to_vec();
     ///
-    /// # let cs_exp = [
-    /// #    PinTransaction::set(PinState::High),
-    /// #     PinTransaction::set(PinState::Low),
-    /// #     PinTransaction::set(PinState::High),
-    /// # ];
-    /// #
-    /// # let spi = SpiMock::new(&[SpiTransaction::transfer(vec![0, 0], temp)]);
-    /// # let cs = PinMock::new(&cs_exp);
-    /// // (pretend there's some spi/chip select setup code)
-    ///
-    /// let mut max = Max6675::new(spi, cs).unwrap();
+    /// # let spi = Mock::new(&expected);
+    /// // pretend there's some spi setup code above...
+    /// let mut max = Max6675::new(spi).unwrap();
     /// assert_approx_eq!(max.read_kelvin().unwrap().into_inner(), 373.15_f32);
+    /// max.free().done();
     /// ```
-    pub fn read_kelvin(&mut self) -> Result<Temperature, Max6675Error<SpiError, CsError>> {
+    pub fn read_kelvin(&mut self) -> Result<Temperature, Max6675Error<SpiError>> {
         Ok(self.read_celsius()?.to_kelvin())
     }
 }

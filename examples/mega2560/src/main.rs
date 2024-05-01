@@ -7,6 +7,9 @@ use max6675_hal::Max6675;
 use panic_halt as _;
 use ufmt::uwriteln;
 
+// FIXME: since `avr-hal` is out of date, this isn't usable right now! 😖
+//        ...but! when it's updated, remove this warning and test that mofo
+
 #[arduino_hal::entry]
 fn main() -> ! {
     let dp = arduino_hal::Peripherals::take().unwrap();
@@ -18,7 +21,7 @@ fn main() -> ! {
     let dummy_mosi = pins.d51.into_output(); // unused with the max6675
 
     // yeah, it's a lotta stuff. sorry!
-    let (spi, chip_select) = Spi::new(
+    let (spi, _) = Spi::new(
         dp.SPI,
         sck_pin,
         dummy_mosi,
@@ -33,7 +36,7 @@ fn main() -> ! {
 
     let mut serial = arduino_hal::default_serial!(dp, pins, 57600);
 
-    let mut max = Max6675::new(spi, chip_select);
+    let mut max = Max6675::new(spi);
 
     arduino_hal::delay_ms(500);
 
