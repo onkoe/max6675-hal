@@ -18,14 +18,11 @@ std = []
 
 [dependencies]
 simmer = { version = "0.3", features = ["f32"] }
-embedded-hal = { version = "1.0.0-r3", features = [
-] } # TODO: change to 1.0 when applicable!
+embedded-hal = { version = "1.0.0", features = [] }
 ufmt = "0.2"
 
 [dev-dependencies]
 anyhow = "1.0"
 assert_approx_eq = "1.1"
-embedded-hal-mock = { version = "0.10.0-rc.4", features = [
-    "eh1",
-] } # TODO: change to 0.10.0 when applicable!
+embedded-hal-mock = { version = "0.10.0", features = ["eh1"] }
 once_cell = "1.19.0"
