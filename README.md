@@ -1,4 +1,8 @@
+<!-- cargo-rdme start -->
+
 # max6675-hal
+
+An embedded-hal driver for the MAX6675 digital thermocouple converter.
 
 [<img alt="license badge" src="https://img.shields.io/github/license/onkoe/max6675-hal">](https://github.com/onkoe/max6675-hal)
 [<img alt="docs.rs badge" src="https://img.shields.io/docsrs/max6675-hal">](https://docs.rs/max6675-hal)
@@ -6,20 +10,17 @@
 [<img alt="GitHub badge" src="https://img.shields.io/badge/github-onkoe/max6675--hal-6e5494">](https://github.com/onkoe/max6675-hal)
 [<img alt="GitHub Actions badge" src="https://img.shields.io/github/actions/workflow/status/onkoe/max6675-hal/ci.yml?branch=main">](https://github.com/onkoe/max6675-hal/actions)
 
-An `embedded-hal` driver for the MAX6675 digital thermocouple converter.
-
 ## Usage
 
-This example code will change depending on which HAL device driver you're using. An `arduino-hal` project's SPI isn't like that of an `esp32-hal` project.
+This example code will change depending on which HAL device driver you're
+using. An `arduino-hal` project's SPI isn't like that of an `esp32-hal`
+project.
 
-However, you only have to focus on two parts:
+However, you only need to focus on your device's SPI implementation!
+(thanks, `embedded-hal` 1.0 ☺️)
 
-1. A CS (chip select) pin as an `OutputPin`
-2. Some SPI representation that doesn't exclusively own the CS pin (I'm looking at you, `linux-embedded-hal`!)
-
-Your SPI settings should use MSB (most significant bit) first, target a clock speed of at least 4mhz, and utilize SPI Mode 1.
-
-After both are good, pass them into the `Max6675::new(spi, chip_select)` constructor. Ta-da! Your MAX6675 gets put to good use.
+Your SPI settings should use MSB (most significant bit) first, target a clock speed of
+at least 4mhz, and utilize SPI Mode 1.
 
 ```rust
 // first, define what pins you're connecting to
@@ -31,7 +32,7 @@ let sck_pin = pins.("your sck/clock pin").into_output();
 // if so, just pick some pin that you're not using ☺️
 let dummy_mosi = pins.("some pin you're not using").into_output();
 
-let (spi, cs) = device-hal::spi::Spi::new(
+let (spi, _) = device-hal::spi::Spi::new(
     sck_pin, dummy_mosi, so_pin, cs_pin,
     device-hal::spi::Settings {
         // pick some settings that roughly align like so:
@@ -40,17 +41,28 @@ let (spi, cs) = device-hal::spi::Spi::new(
         mode: embedded_hal::spi::MODE_1,
     }
 );
-let mut max = Max6675::new(spi, cs)?; // your spi and chip select here
+let mut max = Max6675::new(spi)?; // your spi and chip select here
 
 let temp = max.read_celsius()? // ayo! we got the temperature
 ```
 
+## Note
+
+This crate re-exports a Temperature type from another crate, `simmer`.
+You can change and play with the temperatures in various ways, so feel free
+to [check out its docs](https://docs.rs/crate/simmer/latest) for more info.
+
 ## Contributions
 
-Contributions are welcome to this project! Since it's pretty small, feel free to submit a PR whenever. You can also make an issue - I'll likely get to it soon!
+Contributions are welcome to this project! Since it's pretty small, feel
+free to submit a PR whenever. You can also make an issue - I'll likely get
+to it soon!
 
 ## Help
 
 Please don't hesitate to make an issue if you experience any problems!
 
-If you can, please submit a [`hw-probe` report](https://linux-hardware.org/?view=howto) alongside any error messages or useful logs you have!
+If you can, please submit a [`hw-probe` report](https://linux-hardware.org/?view=howto)
+alongside any error messages or useful logs you have!
+
+<!-- cargo-rdme end -->
