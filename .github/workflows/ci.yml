@@ -87,7 +87,7 @@ jobs:
 
             - uses: taiki-e/install-action@v2
               with:
-                  tool: cargo-all-features
+                  tool: cargo-all-features,cargo-deny
 
             - name: Build
               run: cargo build-all-features --verbose
@@ -96,7 +96,7 @@ jobs:
               run: cargo test-all-features
 
             - name: Run `cargo-deny`
-              uses: EmbarkStudios/cargo-deny-action@v1
+              run: cargo deny check
 
             - name: Check feature gate
               working-directory: ./.github/workflows/ci
