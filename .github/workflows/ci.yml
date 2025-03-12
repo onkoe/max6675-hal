@@ -8,9 +8,44 @@ env:
     CARGO_TERM_COLOR: always
 
 jobs:
+    # Ensures the README is up-to-date with that of docs.rs.
+    check_rdme:
+        runs-on: ubuntu-22.04
+        steps:
+            - uses: actions/checkout@v3
+            
+            - name: Install Rust
+              uses: actions-rust-lang/setup-rust-toolchain@v1
+              with:
+                toolchain: stable
+            
+            - name: Install `cargo-rdme`
+              uses: taiki-e/install-action@v2
+              with:
+                tool: cargo-rdme
+
+            - name: Use `cargo-rdme` to see if README matches `lib.rs`
+              run: cargo rdme --check
+
+    # Checks for missed Clippy lints.
+    clippy:
+        runs-on: ubuntu-22.04
+        steps:
+            - uses: actions/checkout@v3
+            
+            - name: Install Rust
+              uses: actions-rust-lang/setup-rust-toolchain@v1
+              with:
+                components: clippy
+                toolchain: stable
+
+            - name: Check for missed Clippy lints
+              run: RUSTFLAGS="-Dwarnings" cargo clippy
+      
+    # Build the project and runs the test suite.
     build_and_test:
         name: Rust project - latest
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-22.04
         strategy:
             matrix:
                 toolchain:
@@ -21,10 +56,10 @@ jobs:
         steps:
             - uses: actions/checkout@v4
 
-            - name: Set up Rust toolchain
-              uses: dtolnay/rust-toolchain@stable
+            - name: Install Rust
+              uses: actions-rust-lang/setup-rust-toolchain@v1
               with:
-                  toolchain: ${{ matrix.toolchain }}
+                toolchain: ${{ matrix.toolchain }}
 
             - name: Cache cargo registry
               uses: actions/cache@v3
@@ -68,7 +103,7 @@ jobs:
               run: rustc main.rs --verbose --forbid warnings
 
     test_semver:
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-22.04
         steps:
             - uses: actions/checkout@v3
 
@@ -76,7 +111,7 @@ jobs:
               uses: obi1kenobi/cargo-semver-checks-action@v2
 
     build_examples:
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-22.04
         steps:
             - uses: actions/checkout@v4
 
