@@ -3,6 +3,12 @@
 //!
 //! An embedded-hal driver for the MAX6675 digital thermocouple converter.
 //!
+//! [<img alt="license badge" src="https://img.shields.io/github/license/onkoe/max6675-hal">](https://github.com/onkoe/max6675-hal)
+//! [<img alt="docs.rs badge" src="https://img.shields.io/docsrs/max6675-hal">](https://docs.rs/max6675-hal)
+//! [<img alt="crates.io badge" src="https://img.shields.io/crates/dv/max6675-hal?label=crates.io">](https://crates.io/crates/max6675-hal)
+//! [<img alt="GitHub badge" src="https://img.shields.io/badge/github-onkoe/max6675--hal-6e5494">](https://github.com/onkoe/max6675-hal)
+//! [<img alt="GitHub Actions badge" src="https://img.shields.io/github/actions/workflow/status/onkoe/max6675-hal/ci.yml?branch=main">](https://github.com/onkoe/max6675-hal/actions)
+//!
 //! ## Usage
 //!
 //! This example code will change depending on which HAL device driver you're
@@ -44,6 +50,19 @@
 //! This crate re-exports a Temperature type from another crate, `simmer`.
 //! You can change and play with the temperatures in various ways, so feel free
 //! to [check out its docs](https://docs.rs/crate/simmer/latest) for more info.
+//! 
+//! ## Contributions
+//! 
+//! Contributions are welcome to this project! Since it's pretty small, feel
+//! free to submit a PR whenever. You can also make an issue - I'll likely get
+//! to it soon!
+//! 
+//! ## Help
+//! 
+//! Please don't hesitate to make an issue if you experience any problems!
+//! 
+//! If you can, please submit a [`hw-probe` report](https://linux-hardware.org/?view=howto)
+//! alongside any error messages or useful logs you have!
 
 use core::marker::PhantomData;
 use embedded_hal::spi::SpiDevice;
