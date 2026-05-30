@@ -50,17 +50,17 @@
 //! This crate re-exports a Temperature type from another crate, `simmer`.
 //! You can change and play with the temperatures in various ways, so feel free
 //! to [check out its docs](https://docs.rs/crate/simmer/latest) for more info.
-//! 
+//!
 //! ## Contributions
-//! 
+//!
 //! Contributions are welcome to this project! Since it's pretty small, feel
 //! free to submit a PR whenever. You can also make an issue - I'll likely get
 //! to it soon!
-//! 
+//!
 //! ## Help
-//! 
+//!
 //! Please don't hesitate to make an issue if you experience any problems!
-//! 
+//!
 //! If you can, please submit a [`hw-probe` report](https://linux-hardware.org/?view=howto)
 //! alongside any error messages or useful logs you have!
 
@@ -78,20 +78,21 @@ pub use simmer::Temperature;
 /// A representation of the MAX6675 digital thermocouple converter.
 /// Maintains an SPI connection to the device.
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub struct Max6675<Spi, SpiError>
+pub struct Max6675<Spi>
 where
-    Spi: SpiDevice<Error = SpiError>,
+    Spi: SpiDevice,
+    Spi::Error: core::fmt::Debug,
 {
     /// SPI connection
     spi: Spi,
 
     // we're using the generic spi error, but not here!
-    _spi_err: PhantomData<SpiError>,
+    _spi_err: PhantomData<Spi::Error>,
 }
 
-impl<Spi, SpiError> Max6675<Spi, SpiError>
+impl<Spi> Max6675<Spi>
 where
-    Spi: SpiDevice<Error = SpiError>,
+    Spi: SpiDevice,
 {
     /// Creates a new Max6675 representation.
     ///
@@ -126,7 +127,7 @@ where
     /// );
     /// let mut max = Max6675::new(spi)?; // your spi here
     /// ```
-    pub fn new(spi: Spi) -> Result<Self, Max6675Error<SpiError>> {
+    pub fn new(spi: Spi) -> Result<Self, Max6675Error<Spi::Error>> {
         Ok(Self {
             spi,
             _spi_err: PhantomData,
@@ -175,7 +176,7 @@ where
     /// assert_eq!(max.read_raw().unwrap(), [0xc, 0x80]);
     /// # max.free().done();
     /// ```
-    pub fn read_raw(&mut self) -> Result<[u8; 2], Max6675Error<SpiError>> {
+    pub fn read_raw(&mut self) -> Result<[u8; 2], Max6675Error<Spi::Error>> {
         let mut buf: [u8; 2] = [0_u8; 2];
         self.spi.read(&mut buf)?;
 
@@ -183,7 +184,7 @@ where
     }
 
     /// Internal function to convert a `read_raw()` into a parsable `u16`.
-    fn process_raw(&mut self) -> Result<u16, Max6675Error<SpiError>> {
+    fn process_raw(&mut self) -> Result<u16, Max6675Error<Spi::Error>> {
         Ok(u16::from_be_bytes(self.read_raw()?))
     }
 
@@ -211,7 +212,7 @@ where
     /// assert_approx_eq!(max.read_celsius().unwrap().into_inner(), 100_f32);
     /// # max.free().done();
     /// ```
-    pub fn read_celsius(&mut self) -> Result<Temperature, Max6675Error<SpiError>> {
+    pub fn read_celsius(&mut self) -> Result<Temperature, Max6675Error<Spi::Error>> {
         let raw = self.process_raw()?;
 
         if raw & 0x04 != 0 {
@@ -246,7 +247,7 @@ where
     /// assert_approx_eq!(max.read_fahrenheit().unwrap().into_inner(), 68_f32);
     /// # max.free().done();
     /// ```
-    pub fn read_fahrenheit(&mut self) -> Result<Temperature, Max6675Error<SpiError>> {
+    pub fn read_fahrenheit(&mut self) -> Result<Temperature, Max6675Error<Spi::Error>> {
         Ok(self.read_celsius()?.to_fahrenheit())
     }
 
@@ -274,7 +275,7 @@ where
     /// assert_approx_eq!(max.read_kelvin().unwrap().into_inner(), 373.15_f32);
     /// max.free().done();
     /// ```
-    pub fn read_kelvin(&mut self) -> Result<Temperature, Max6675Error<SpiError>> {
+    pub fn read_kelvin(&mut self) -> Result<Temperature, Max6675Error<Spi::Error>> {
         Ok(self.read_celsius()?.to_kelvin())
     }
 }

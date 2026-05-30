@@ -53,7 +53,7 @@ fn test_raw() {
 }
 
 // long ahh types
-type Max = Max6675<Generic<Transaction<u8>>, embedded_hal::spi::ErrorKind>;
+type Max = Max6675<Generic<Transaction<u8>>>;
 type MaxError = Max6675Error<embedded_hal::spi::ErrorKind>;
 
 fn make_max6675(expected: impl Into<Vec<Transaction<u8>>>) -> Result<Max, MaxError> {
