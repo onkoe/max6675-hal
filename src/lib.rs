@@ -219,7 +219,9 @@ where
             return Err(Max6675Error::OpenCircuitError);
         }
 
-        let temp = ((raw >> 3) & 0x1FFF) as f32 * 0.25_f32;
+        // D14..D3 hold the 12-bit reading; D15 is a dummy sign bit that should always read 0,
+        // so it must not be part of the value (a stray D15 would add 1024 °C).
+        let temp = ((raw >> 3) & 0x0FFF) as f32 * 0.25_f32;
         Ok(Temperature::Celsius(temp))
     }
 
