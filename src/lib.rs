@@ -18,8 +18,9 @@
 //! However, you only need to focus on your device's SPI implementation!
 //! (thanks, `embedded-hal` 1.0 ☺️)
 //!
-//! Your SPI settings should use MSB (most significant bit) first, target a clock speed of
-//! at least 4mhz, and utilize SPI Mode 1.
+//! Your SPI settings should use MSB (most significant bit) first, a clock speed of
+//! at most 4.3 MHz (datasheet maximum; 1 MHz is a safe choice), and SPI Mode 0
+//! (SCK idles low, data shifts out on the falling edge).
 //!
 //! ```ignore
 //! // first, define what pins you're connecting to
