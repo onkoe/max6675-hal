@@ -7,10 +7,10 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.76"
-embedded-hal = "1.0.0-rc.3"
+embedded-hal = "1.0.0"
 
 [dependencies.linux-embedded-hal]
-git = "https://github.com/rust-embedded/linux-embedded-hal"
+version = "0.5.0"
 default-features = false
 features = ["spi"]
 
