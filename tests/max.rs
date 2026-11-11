@@ -52,8 +52,21 @@ fn test_raw() {
     max.free().done();
 }
 
+#[test]
+fn test_celsius_ignores_dummy_sign_bit() {
+    // D15 set (e.g. a misaligned or noisy read) must not add 1024 °C to the reading.
+    let mut max = make_max6675([
+        Transaction::transaction_start(),
+        Transaction::read_vec((0x8000_u16 | (148 << 3)).to_be_bytes().to_vec()),
+        Transaction::transaction_end(),
+    ])
+    .unwrap();
+    assert_approx_eq!(max.read_celsius().unwrap().into_inner(), 37_f32);
+    max.free().done();
+}
+
 // long ahh types
-type Max = Max6675<Generic<Transaction<u8>>, embedded_hal::spi::ErrorKind>;
+type Max = Max6675<Generic<Transaction<u8>>>;
 type MaxError = Max6675Error<embedded_hal::spi::ErrorKind>;
 
 fn make_max6675(expected: impl Into<Vec<Transaction<u8>>>) -> Result<Max, MaxError> {
