@@ -1,4 +1,4 @@
-#![cfg_attr(not(feature = "std"), no_std)]
+#![no_std]
 //! # max6675-hal
 //!
 //! An embedded-hal driver for the MAX6675 digital thermocouple converter.

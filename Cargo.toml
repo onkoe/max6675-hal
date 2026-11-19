@@ -5,16 +5,13 @@ edition = "2021"
 description = "An embedded-hal driver for the MAX6675 digital thermocouple converter."
 license = "MIT"
 authors = ["Barrett <contact@barretts.club>"]
+rust-version = "1.81"
 
 readme = "README.md"
 repository = "https://github.com/onkoe/max6675-hal"
 keywords = ["temperature", "thermocouple", "max6675"]
 categories = ["embedded", "hardware-support", "no-std", "science::robotics"]
 exclude = [".github", "examples", "tests", "deny.toml"]
-
-[features]
-# /// The `std` feature unlocks the `std::error::Error` impl for `Max6675Error`.
-std = []
 
 [dependencies]
 simmer = { version = "0.3", features = ["f32"] }
