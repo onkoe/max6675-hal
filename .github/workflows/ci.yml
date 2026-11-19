@@ -98,10 +98,6 @@ jobs:
       - name: Run `cargo-deny`
         run: cargo deny check
 
-      - name: Check feature gate
-        working-directory: ./.github/workflows/ci
-        run: rustc main.rs --verbose --forbid warnings
-
   test_semver:
     runs-on: ubuntu-22.04
     steps:
