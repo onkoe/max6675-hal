@@ -1,146 +1,146 @@
 name: Cargo Build & Test
 
 on:
-    push:
-    pull_request:
+  push:
+  pull_request:
 
 env:
-    CARGO_TERM_COLOR: always
+  CARGO_TERM_COLOR: always
 
 jobs:
-    # Ensures the README is up-to-date with that of docs.rs.
-    check_rdme:
-        runs-on: ubuntu-22.04
-        steps:
-            - uses: actions/checkout@v3
-            
-            - name: Install Rust
-              uses: actions-rust-lang/setup-rust-toolchain@v1
-              with:
-                toolchain: stable
-            
-            - name: Install `cargo-rdme`
-              uses: taiki-e/install-action@v2
-              with:
-                tool: cargo-rdme
+  # Ensures the README is up-to-date with that of docs.rs.
+  check_rdme:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
 
-            - name: Use `cargo-rdme` to see if README matches `lib.rs`
-              run: cargo rdme --check
+      - name: Install Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
 
-    # Checks for missed Clippy lints.
-    clippy:
-        runs-on: ubuntu-22.04
-        steps:
-            - uses: actions/checkout@v3
-            
-            - name: Install Rust
-              uses: actions-rust-lang/setup-rust-toolchain@v1
-              with:
-                components: clippy
-                toolchain: stable
+      - name: Install `cargo-rdme`
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-rdme
 
-            - name: Check for missed Clippy lints
-              run: RUSTFLAGS="-Dwarnings" cargo clippy
-      
-    # Build the project and runs the test suite.
-    build_and_test:
-        name: Rust project - latest
-        runs-on: ubuntu-22.04
-        strategy:
-            matrix:
-                toolchain:
-                    - stable
-                    - nightly
-            fail-fast: false
+      - name: Use `cargo-rdme` to see if README matches `lib.rs`
+        run: cargo rdme --check
 
-        steps:
-            - uses: actions/checkout@v4
+  # Checks for missed Clippy lints.
+  clippy:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
 
-            - name: Install Rust
-              uses: actions-rust-lang/setup-rust-toolchain@v1
-              with:
-                toolchain: ${{ matrix.toolchain }}
+      - name: Install Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          components: clippy
+          toolchain: stable
 
-            - name: Cache cargo registry
-              uses: actions/cache@v3
-              with:
-                  path: ~/.cargo/registry
-                  key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+      - name: Check for missed Clippy lints
+        run: RUSTFLAGS="-Dwarnings" cargo clippy
 
-            - name: Cache cargo index
-              uses: actions/cache@v3
-              with:
-                  path: ~/.cargo/git
-                  key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+  # Build the project and runs the test suite.
+  build_and_test:
+    name: Rust project - latest
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        toolchain:
+          - stable
+          - nightly
+      fail-fast: false
 
-            - name: Cache cargo build
-              uses: actions/cache@v3
-              with:
-                  path: target
-                  key: ${{ runner.os }}-cargo-build-target-${{ matrix.toolchain }}-${{ hashFiles('**/Cargo.lock') }}
+    steps:
+      - uses: actions/checkout@v4
 
-            - name: Cache cargo bin
-              uses: actions/cache@v3
-              with:
-                  path: ~/.cargo/bin
-                  key: ${{ runner.os }}-cargo-bin-${{ hashFiles('**/Cargo.lock') }}
+      - name: Install Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: ${{ matrix.toolchain }}
 
-            - uses: taiki-e/install-action@v2
-              with:
-                  tool: cargo-all-features,cargo-deny
+      - name: Cache cargo registry
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
 
-            - name: Build
-              run: cargo all-features build --verbose
+      - name: Cache cargo index
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/git
+          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
 
-            - name: Run tests
-              run: cargo all-features test
+      - name: Cache cargo build
+        uses: actions/cache@v3
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-build-target-${{ matrix.toolchain }}-${{ hashFiles('**/Cargo.lock') }}
 
-            - name: Run `cargo-deny`
-              run: cargo deny check
+      - name: Cache cargo bin
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/bin
+          key: ${{ runner.os }}-cargo-bin-${{ hashFiles('**/Cargo.lock') }}
 
-            - name: Check feature gate
-              working-directory: ./.github/workflows/ci
-              run: rustc main.rs --verbose --forbid warnings
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-all-features,cargo-deny
 
-    test_semver:
-        runs-on: ubuntu-22.04
-        steps:
-            - uses: actions/checkout@v3
+      - name: Build
+        run: cargo all-features build --verbose
 
-            - name: Check semver
-              uses: obi1kenobi/cargo-semver-checks-action@v2
+      - name: Run tests
+        run: cargo all-features test
 
-    build_examples:
-        runs-on: ubuntu-22.04
-        steps:
-            - uses: actions/checkout@v4
+      - name: Run `cargo-deny`
+        run: cargo deny check
 
-            - name: Set up Rust toolchain
-              uses: dtolnay/rust-toolchain@stable
+      - name: Check feature gate
+        working-directory: ./.github/workflows/ci
+        run: rustc main.rs --verbose --forbid warnings
 
-            - name: Cache cargo registry
-              uses: actions/cache@v3
-              with:
-                  path: ~/.cargo/registry
-                  key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+  test_semver:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
 
-            - name: Cache cargo index
-              uses: actions/cache@v3
-              with:
-                  path: ~/.cargo/git
-                  key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+      - name: Check semver
+        uses: obi1kenobi/cargo-semver-checks-action@v2
 
-            - name: Cache cargo build
-              uses: actions/cache@v3
-              with:
-                  path: target
-                  key: ${{ runner.os }}-cargo-build-target-stable-${{ hashFiles('**/Cargo.lock') }}
+  build_examples:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
 
-            # TODO: uncomment when arudino updates their HAL
-            #- name: Check Arduino MEGA 2560 example
-            #  working-directory: ./examples/mega2560
-            #  run: cargo build --release --target avr-specs/avr-atmega2560.json
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
 
-            - name: Check `linux-eh` example
-              working-directory: ./examples/linux
-              run: cargo build --release
+      - name: Cache cargo registry
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache cargo index
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/git
+          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache cargo build
+        uses: actions/cache@v3
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-build-target-stable-${{ hashFiles('**/Cargo.lock') }}
+
+      # TODO: uncomment when arudino updates their HAL
+      #- name: Check Arduino MEGA 2560 example
+      #  working-directory: ./examples/mega2560
+      #  run: cargo build --release --target avr-specs/avr-atmega2560.json
+
+      - name: Check `linux-eh` example
+        working-directory: ./examples/linux
+        run: cargo build --release
