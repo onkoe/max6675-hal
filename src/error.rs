@@ -58,19 +58,4 @@ impl<SpiError> ufmt::uDebug for Max6675Error<SpiError> {
     }
 }
 
-// implement error if it's feasible
-// FIXME: use core::error::Error once stable! <3
-#[cfg(feature = "std")]
-impl<SpiError: std::fmt::Debug> std::error::Error for Max6675Error<SpiError> {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        None // other types typically don't impl error :p
-    }
-
-    fn description(&self) -> &str {
-        "error description is deprecated. use display instead!"
-    }
-
-    fn cause(&self) -> Option<&dyn std::error::Error> {
-        self.source() // (none)
-    }
-}
+impl<SpiError: core::fmt::Debug> core::error::Error for Max6675Error<SpiError> {}
